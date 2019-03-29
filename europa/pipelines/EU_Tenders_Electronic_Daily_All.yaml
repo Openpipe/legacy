@@ -1,0 +1,44 @@
+#
+# ~/TED/daily-packages/2018/ is a mirror from ftp://ted.europa.eu/daily-packages/2018/
+#
+# Schema details are available from:
+#   http://publications.europa.eu/mdr/eprocurement/ted/index.html
+#
+start:
+    - insert:
+        - ~/TED/daily-packages/2018/11/20181106_2018213.tar.gz
+    - collect from glob: #~/TED/daily-packages/2018/*/*.gz
+    - insert: $_$   # Glob returns a single list, we want to hande each filename individually
+    - print: Processing tar file $_$
+    - collect from tarfile:
+    - print: Processing xml file $name$
+    # Ugly hack to remove <P></P> from htmllified text
+    - insert: $ content.replace(b'</P>', b'\n') $
+    - insert: $ _.replace(b'<P>', b'') $
+    #- parse text xmltodict:
+    - parse text xml_yaml_extract:
+        TED_EXPORT:
+            "@DOC_ID": DOC_ID
+            CODED_DATA_SECTION:
+                REF_OJS:
+                    DATE_PUB: .
+                NOTICE_DATA:
+                    ISO_COUNTRY:
+                        "@VALUE": ISO_COUNTRY
+
+            TRANSLATION_SECTION:
+                ML_TITLES:
+                    ML_TI_DOC: .
+    - update:
+        ML_TI_DOC:  $[x for x in ML_TI_DOC if x['@LG']=='EN'][0]$
+    - update:
+        COUNTRY:    $ML_TI_DOC['TI_CY']$
+        TOWN:       $ML_TI_DOC['TI_TOWN']$
+        TEXT:       $ML_TI_DOC['TI_TEXT']$
+        TD_DOCUMENT_TYPE:   $TD_DOCUMENT_TYPE['#text']$
+        COUNT:      1   # Inject a count field to be summed
+    - drop:         ML_TI_DOC   # We no longer need the original field
+    - export into influxdb:
+        measurement:    TED
+        tag_set:          [ISO_COUNTRY, TOWN]
+        field_set:        [COUNT]

@@ -1,0 +1,17 @@
+start:
+    - collect datasource url:
+        # Get public data
+        path: https://data.cityofnewyork.us/api/views/kku6-nxdu/rows.csv?accessType
+
+    - transform item splitlines: # Split content into lines (for CSV parsing)
+        $content$
+
+    - parse line csv:   # Parse using the first line for the field names
+        include_headers: True
+        auto_number: True
+
+    - transform item sum:   # Calculate the sum for each of the fields
+        { COUNT FEMALE: females, COUNT MALE: males }
+
+    - transport matplotlib piechart: # Draw a pie chart
+        filename: /tmp/US_cityofneewyourk_gender.png

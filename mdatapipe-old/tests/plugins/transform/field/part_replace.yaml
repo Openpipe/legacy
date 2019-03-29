@@ -1,0 +1,18 @@
+start:
+    - collect inline yaml:
+        color: Red Flag
+        name: Big Red Flower
+        gender: male
+
+
+    - transform field part_replace:
+        color:
+            "Red" : "Blue"
+        name:
+            "Red" : "Yellow"
+            "Flower" : "Rose"
+
+    - test asserting value:
+        color: Blue Flag
+        name: Big Yellow Rose
+        gender: male

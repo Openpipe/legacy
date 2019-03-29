@@ -1,0 +1,50 @@
+start:
+    - collect from file:
+        path: opendata/AtividadeDeputadoXIII.xml.gz
+        full_content: true
+
+    - parse text xml_yaml_extract:
+        { ArrayOfAtividadeDeputado: { AtividadeDeputado: . } }
+
+    # Insere o elemento único ou insere cada um dos elementos quando se tratar de uma lista
+    # Isto é necessário porque há registos de deputados que apresentam uma uma única actividade
+    - insert: $AtividadeDeputado$
+
+    # Extrai apenas as estruturas relevantes e com nomes de campos inteligíveis
+    - parse text json_yaml_extract:
+        AtividadeDeputadoList: { pt_gov_ar_wsar_objectos_ActividadeOut: actividades_por_tipo }
+        deputado: { depNomeParlamentar: ., depGP: { pt_ar_wsgode_objectos_DadosSituacaoGP: { gpSigla: . } } }
+
+    # Identificar deputados pelo nome / grupo parlamentar
+    - update:
+        set:
+            Deputado: $depNomeParlamentar$ [$gpSigla$]  # Adicionar partido na descrição do Deputado
+
+    # Extender (multiplicando) os registos de actividades de forma a criar uma lógica de repetição,
+    # similar à execução de um ciclo sobre cada um dos tipos de actividade
+    - extend:
+        - { tipo: Gpa, tipoDesc: Grupos parlamentares de amizade, objecto: GruposParlamentaresAmizadeOut }
+        - { tipo: actP, tipoDesc: Requerimentos, objecto: pt_gov_ar_wsar_objectos_ActividadesParlamentaresOut }
+        - { tipo: req, tipoDesc: Requerimentos, objecto: pt_gov_ar_wsar_objectos_RequerimentosOut }
+        - { tipo: ini, tipoDesc: Iniciativas, objecto: pt_gov_ar_wsar_objectos_IniciativasOut }
+        - { tipo: scgt, tipoDesc: Subcomissões e grupos de trabalho, objecto: pt_gov_ar_wsar_objectos_SubComissoesGruposTrabalhoOut }
+        - { tipo: Intev, tipoDesc: Lista de intervenções, objecto: pt_gov_ar_wsar_objectos_IntervencoesOut }
+        - { tipo: audiências, tipoDesc: Audiências, objecto: pt_gov_ar_wsar_objectos_ActividadesComissaoOut }
+        - { tipo: audicoes, tipoDesc: Audições, objecto: pt_gov_ar_wsar_objectos_ActividadesComissaoOut }
+
+    - copy to segment:
+        - info_para_um_tipo_de_activades
+
+info_para_um_tipo_de_activades:
+
+    # Selecionar apenas as atividades dos tipos que são conhecidos
+    - select: $ tipo in actividades_por_tipo $
+
+    # Recolhe apenas a informação relevante para o tipo de actividades que devem ser tratadas
+    - insert:
+        Deputado: $ Deputado $
+        tipoDesc: $ tipoDesc $
+        Actividades: $ actividades_por_tipo[tipo][objecto] $
+    - enforce list: Actividades
+    - pprint:
+

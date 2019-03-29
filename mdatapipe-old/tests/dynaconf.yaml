@@ -1,0 +1,68 @@
+start:
+    # full config replacement with full input
+    - collect inline text: Something
+    - collect inline text: $$
+    - test asserting value: Something
+
+    # full config replacement with an input field
+    - collect inline yaml:
+        name: Joe
+        surname: Doe
+    - collect inline text: $surname$
+    - test asserting value: Doe
+
+    # config field replacement with an input field
+    - collect inline yaml:
+        name: Joe
+        surname: Doe
+    - collect inline yaml:
+        my_field_name: $name$
+    - test asserting value:
+        my_field_name: Joe
+
+    ## config field replacement with composed value
+    - collect inline yaml:
+        name: Joe
+        surname: Doe
+    - collect inline yaml:
+        middle_field: My $name$ is
+    - test asserting value:
+        middle_field: My Joe is
+
+    # config (list) field replacement with an input field
+    - collect inline yaml:
+        name: Joe
+        surname: Doe
+    - collect inline yaml:
+        my_field_name: [ $name$ ]
+    - test asserting value:
+        my_field_name: [ "Joe" ]
+
+    # config (list) field replacement with an input field
+    - collect inline yaml:
+        person:
+            name: Joe
+            surname: Doe
+
+    - collect inline yaml:
+        lower_field_name: $person['surname']$
+
+    - test asserting value:
+        lower_field_name: Doe
+
+    # config (list) field replacement with an input field
+    - collect inline yaml:
+        id: "12"
+        person:
+            name: Joe
+            surname: Doe
+
+    - collect inline yaml:
+        lower_field_name: $id$ $person['surname']$
+
+    - test asserting value:
+        lower_field_name: 12 Doe
+
+    # full config replacement with full input
+    - collect inline text: \$I Wan't to have \$ the \$good\$ and the bad
+    - test asserting value: \$I Wan't to have \$ the \$good\$ and the bad

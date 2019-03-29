@@ -1,0 +1,33 @@
+
+:source-highlighter: prettify
+
+=== collect datasource clock plugin
+
+
+==== Description
+This plugin produces the current time value at defined intervals. It stops if a maximum count of iterations is set.
+
+The following example produces the time in seconds since the epoch as a floating point number. Events will be generated with the configured `interval`, the plugin stops after `max_count` iterations.
+
+[source,yaml]
+----
+- collect datasource clock:
+    interval: 3s
+    max_count: 3
+----
+
+[source,bash]
+----
+1534342087.356002
+1534342092.363466
+1534342097.366616
+----
+
+This plugin supports the following configuration options:
+
+[cols="<,<,<,<",options="header",]
+|=======================================================================
+|Setting |Input type|Default| Description
+|interval| nnn"m", nnn"s" |Required|Sleep time between events production
+|max_count| Integer |-1 (Infinite)|Max number of events
+|=======================================================================

@@ -1,0 +1,20 @@
+start:
+    - collect datasource file:
+        path: examples/samples/SOMEHOST_20150909_040202.nmon.gz
+
+    - parse line nmon:
+
+    - transport console pprint:
+
+    - transport datastore influxdb:
+        url: http://localhost:8086/
+        measurement: $metric_name$
+        tag_set: [hostname]
+        field_set: $components$
+        dbname: mdatapipe
+        buffer_size: 1000
+        timestamp: timestamp
+
+
+
+

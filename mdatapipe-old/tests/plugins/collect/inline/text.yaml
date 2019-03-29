@@ -1,0 +1,3 @@
+start:
+    - collect inline text: This is a sample text
+    - test asserting value: This is a sample text

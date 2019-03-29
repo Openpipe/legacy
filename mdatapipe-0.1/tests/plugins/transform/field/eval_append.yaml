@@ -1,0 +1,10 @@
+start:
+    - collect inline yaml:
+        name: Coat
+        cost: 1200
+    - transform field eval_append:
+        name: .upper()
+        cost: "/10"
+    - test asserting value:
+        name: COAT
+        cost: 120

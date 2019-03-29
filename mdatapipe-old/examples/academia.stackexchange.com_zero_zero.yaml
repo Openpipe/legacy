@@ -1,0 +1,7 @@
+- collect datasource file:
+    path: /tmp/academia/PostHistory.xml.gz
+
+- parse line xml_row:
+
+- transport using zero:
+

@@ -1,0 +1,34 @@
+= DPLv1 Execution Engine
+João Pinto <lamego.pinto@gmail.com>
+Draft
+:toc: left
+:nofooter:
+:source-highlighter: prettify
+:showtitlepage:
+
+== Requirements
+It is required to have a proper understanding of the  link:DatapipePipelineLanguageV1.adoc[Data Pipeline Language v1] before reading this document.
+
+== Introduction
+The DPL execution engine is the software required to run a data pipeline. It reads a DPL document, creates all the required component instances, does the setup of input/output connections between them and starts the pipeline execution.
+
+== Execution Profiles
+The DPL does not set any conditions on the localization of the component instance's for a pipeline. An entire pipeline maybe running in a single thread of a single process in a single system, or distributed across multiple threads, processes or systems.
+
+The following properties of execution profiles must be observed:
+
+    - A constant pipeline with a constant input must produce a constant output when running under different execution profiles
+    - The order of the outputs items is not guaranteed to be constant between runs nor profiles, unless the pipeline ends with an `order by` step, or the segment _sequential_ property is set to True.kv
+    - Execution over different engines may produce different failures (due to profile specific constrains)
+    - They may provide very different performances (for the same pipeline/input data)
+
+The execution profiles currently available are:
+
+    - synchronous-single-thread (default)
+
+More details about each profile will be provided in the next sections.
+
+=== synchronous-single-thread
+
+This is the default profile, it requires less resources and provides better performance operating with small data sets. It is however constrained to use a single CPU core.
+

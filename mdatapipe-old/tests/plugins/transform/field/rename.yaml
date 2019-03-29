@@ -1,0 +1,9 @@
+start:
+    - collect inline yaml:
+        size: 10
+        unit_price: 25
+    - transform field rename:
+        unit_price: price
+    - test asserting value:
+        size: 10
+        price: 25

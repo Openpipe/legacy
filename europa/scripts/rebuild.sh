@@ -1,0 +1,1 @@
+mdatapipe run pipelines/EU_Tenders_Electronic_Daily.yaml

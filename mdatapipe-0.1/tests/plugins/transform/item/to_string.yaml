@@ -1,0 +1,8 @@
+start:
+    - collect inline yaml:
+        number: 12
+
+    - transform item to_string:
+        number:
+
+    - test asserting value: "{'number': 12}"

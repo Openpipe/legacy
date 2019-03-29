@@ -1,0 +1,4 @@
+start:
+    - collect datasource file:
+        path: tests/plugins/collect/datasource/file.yaml
+

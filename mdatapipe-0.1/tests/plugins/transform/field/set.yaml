@@ -1,0 +1,15 @@
+start:
+    - collect inline yaml:
+        name: Jonh
+        age: 99
+        weight: 40
+
+    - transform field set:
+        name: Dan
+        age: 45
+        weight: 40
+
+    - test asserting value:
+        name: Dan
+        age: 45
+        weight: 40

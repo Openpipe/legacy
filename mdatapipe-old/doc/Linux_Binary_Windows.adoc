@@ -1,0 +1,22 @@
+:source-highlighter: prettify
+
+= Binary archive build for linux
+
+This document describes the process that was used to create the Windows binary archive.
+
+== Introduction
+
+The build procedures uses a Windows to create a zip file with Python3 and the mdatapipe package
+
+== Requirements
+
+* Windows System
+https://kent.dl.sourceforge.net/project/winpython/WinPython_3.7/3.7.0.1/WinPython32-3.7.0.1Zero.exe
+* ConEmu portable from https://www.fosshub.com/ConEmu.html
+
+
+=== Instructions
+- Install WinPython32-3.7.0.1Zero
+- Move the dir python-3.7.0 to your target dir
+- Copy the contents from the windows_build dir to your target_dir
+- Run Scripts\pip.exe install https://codeload.github.com/mdatapipe/mdatapipe/zip/master

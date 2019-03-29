@@ -1,0 +1,3 @@
+start:
+    - transport console print:
+        "This is just a counter output"

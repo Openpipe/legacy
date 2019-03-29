@@ -1,0 +1,11 @@
+start:
+    - transport console print:
+        Needs a non default dependency
+    # - collect inline text: <a href="www.localhost">link text</a>
+    # - parse line html_xpath:
+    #     xpath: "//a/@href"
+    # - test asserting value: www.localhost
+    # - collect inline text: <a href="www.localhost/pão">link text</a>
+    # - parse line html_xpath:
+    #     xpath: "//a/@href"
+    # - test asserting value: www.localhost/pão

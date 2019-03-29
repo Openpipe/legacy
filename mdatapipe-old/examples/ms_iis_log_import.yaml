@@ -1,0 +1,12 @@
+- collect datasource file:
+    path: ~/IIS_Log
+
+- parse line ms_iis_log:
+
+    - transport using influxdb:
+    buffer_size: 100
+    dbname: mydb
+    measurement: log_info
+    timestamp: timestamp        # Optional timestamp field (must be an UTC datetime)
+    tag_set: [ s-computername ]
+    field_set: [ time-taken ]

@@ -1,0 +1,52 @@
+= Pipeline Execution Life Cycle
+João Pinto <lamego.pinto@gmail.com>
+Draft
+:toc: left
+:nofooter:
+:source-highlighter: prettify
+:showtitlepage:
+
+== Introduction
+This document describes a DPL pipeline life cycle.
+
+== Execution Life Cycle
+In order to support both synchronous and asynchronous functions, the completion of a life cycle stage will invoke "on_sucess / on_error" callbaks.
+
+=== Loading
+The pipeline execution starts with the pipeline manager invoken the pipeline _load()_ method.
+The method must perform the following tasks:
+
+    . Read the pipeline definition YAML file
+    . YAML syntax checking
+    . Pipeline type recognition (simple/structured)
+    . Availabily check of all the refered components
+    . Create component instances and set resource limits
+        a. Create and start threads/processes/containers/cluster resources
+        a. Create channels between component instances
+    . Invoke the _on_failure()_ callback «if the pipeline or ANY component instance failed to be created»
+    . Invoke the _on_success()_ callback «after ALL componentes have been successffuly loaded»
+
+
+=== Starting
+The pipeline manager must call the  _start()_ method, in the context of the _load(on_success)_ callback.
+The _start()_ method perform the following tasks:
+    . Invoke the _on_start()_ on all components instances
+    . Invoke the _on_failure()_ callback «when ANY instance fails to start»
+    . Invoke the _on_success()_ callback «when ALL instances have started»
+
+
+=== Running
+The pipeline manager must call the  _run()_ method, in the context of the _start(on_success)_ callback. The _run()_ method perform the following tasks:
+
+    . Sends the current time to all instances of the first step of the pipeline
+        a. This will triger the _on_input_() on the first step, cascading to other steps as they receive input items
+    . Sends and end-of-input to all instances of the first step of the pipeline
+        a. This will triger the _on_complete_() on the first step, cascading to other steps as they receive the end-of-input
+    . Invoke the _on_failure()_ callback «when ANY item fails to be processed»
+    . Invoke the _on_success()_ callback «when ALL items have ben processed»
+
+The following extra tasks will be performed on structured pipelines when triggers are set:
+
+    . When the _on_input_() method of the last step produces an output, send it to the segment's _on_output_ segment
+    . When the _on_input_() method of the last step produces a failure, send it to the segment's _on_failure_ segment
+

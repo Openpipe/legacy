@@ -1,0 +1,15 @@
+start:
+    - collect datasource file:
+        path:  /tmp/academia/PostHistory.xml
+
+    - parse line xml_row:
+        int_fields: [ PostId ]
+
+    - transform field group_by:
+        fields: [ PostHistoryTypeId ]
+        stats: [ PostId ]
+
+    - transform item pformat:
+
+    - transport datastore file:
+        path: /tmp/x.x

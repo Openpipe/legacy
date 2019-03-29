@@ -1,0 +1,13 @@
+start:
+    - transport console print:
+        pygrok is not part of the base dependencies
+    # - collect inline text:
+    #     'n24.inetnebr.com - - [01/Aug/1995:00:00:01 -0400] "GET /shuttle/missions/sts-68/news/sts-68-mcc-05.txt HTTP/1.0" 200 1839'
+
+    # - parse line grok:
+    #     expr:
+    #         '
+    #         %{IPORHOST:client_host} %{NOTSPACE} %{NOTSPACE}
+    #         \[%{HTTPDATE:timestamp}\] %{QUOTEDSTRING:request}
+    #         %{NUMBER:http_status_code} (?:%{NUMBER:bytes_sent}|-)
+    #         '

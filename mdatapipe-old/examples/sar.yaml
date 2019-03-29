@@ -1,0 +1,18 @@
+start:
+
+    - collect datasource clock:
+        interval: 5s
+
+    - collect datasource command:
+        env: [LANG: "C", TZ: "UTC", LC_TIME: "C"]
+        cmd: sar -pA 1 1
+
+    - parse line splitlines:
+    - parse line sar:
+
+    - transport datastore influxdb:
+        buffer_size: 100
+        dbname: mydb
+        measurement: sar
+        tag_set: [ hostname, component, metric_name, metric_category ]
+        field_set: [ value ]

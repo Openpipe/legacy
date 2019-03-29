@@ -1,0 +1,25 @@
+== Data Item
+The _item_ is the base unit of information managed in a datapipe. Because _items_ are python objects, their types are dynammicaly set and can be any of the python supported data types.
+
+== Pipeline Step
+A step is a processing unit that receives and/or produces items. A step receives control instructions and produces events, it may receive and/or produce items. A step is bind to a plugin, steps are most commonly connected to other steps, creating a datapipe path. A single step will have multiple instances when parallell processing is set.
+
+== Pipeline Path
+A pipeline path is a sequence/list of steps, it must be defined inside a _label:_ labels can be used to connect different paths. A pipeline MUST contain a _start:_ path. This path is executed when a pipeline is started.
+
+Example:
+
+```yaml
+start:
+    - step one
+    ...
+    - pipeline control send_to:
+        big_size: [ size>20 ] #
+    ...
+    - last step:
+
+big_size:
+    - insert into big_size database
+```
+
+

@@ -1,0 +1,39 @@
+start:
+    ## Build sample text
+    - collect inline list:
+        - '2018-06-05 00:10:07 virtualhost1 10.16.70.14 80 GET /sapatos/ "" 10.6.16.17 10.6.16.67 - "HTTPClient" someid someid someid someid someid HTTP/1.1 200 641 2900'
+        - '2018-06-05 00:10:07 virtualhost1 10.16.70.14 80 GET /sapatos/ "" 10.6.16.17 10.6.16.67 - "HTTPClient" someid someid someid someid someid HTTP/1.1 200 641 1800'
+        - '2018-06-05 00:10:15 virtualhost2 10.16.70.14 80 GET /sapatos/ "" 10.6.16.17 10.6.16.67 - "HTTPClient" someid someid someid someid someid HTTP/1.1 200 641 4000'
+
+    ## Parse using the csv plugin
+    - parse line csv:
+        delimiter: " "
+        field_list:
+                [ # date and time are merged into 2 values (:2), field names with a leading ~ are filtered out
+                "request_start_time:2", vhost, ~host_ip, ~port, method, url, query, ~client_host, ~client_ip, ~remote_user,
+                ~user_agent, ~someid, ~someid, ~someid, ~someid, ~someid, ~http_version, http_status_code, ~response_size, time_taken
+                ]
+
+    ## Transform the "request_start_time" field into an UTC timestamp (for time arithmetics)
+    - transform field timestamp:
+        request_start_time: "%Y-%m-%d %H:%M:%S"
+
+    ## Calculate stats for request_start_time and time_taken
+    - transform field group_by:
+        fields: [ vhost ]
+        stats: [ request_start_time, time_taken ]
+
+    - transform field eval:
+        time_taken_avg: "/1000"   # Convert miliseconds to seconds
+
+    # Calculate RPS
+    - transform field eval_full:
+        rps: (time_taken_count / (request_start_time_max - request_start_time_min + 1))
+
+    # Format for two decimal places
+    - transform field format:
+        rps, time_taken_avg: "{:.2f}"
+
+
+    - transport console print:
+        $vhost$ - Processed $rps$ requests per second, at an average of $time_taken_avg$ seconds per request.

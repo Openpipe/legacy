@@ -1,0 +1,8 @@
+start:
+    - collect inline yaml:
+        unit_count: 100
+        unit_price: 25
+    - transform field eval_full:
+        total_price: unit_count * unit_price
+    - test asserting value:
+        total_price: 2500

@@ -1,0 +1,22 @@
+- collect:
+    - from:
+        # Supply list of items to next plugin
+        - list:
+            - /var/log/MotionPro/*
+            - /var/log/nmon/*
+        # Produce the lise of files as return from Python's glob(path)
+        - glob:
+            path: $$
+
+- transform:
+        # For each consumed item, produce a new item by appending an expresion
+        # In this case, it will produce item[-1], because we only want to
+        # process the last file in each directory
+    - using:
+        - append_eval: "[-1]"
+
+- collect:
+    - from:
+        - file:
+            # "$$"" is replaced with the consumed item
+            path: $$

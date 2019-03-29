@@ -1,0 +1,27 @@
+start:
+    # Text exclusion
+    - collect inline list:
+        - { name: Jon, color: red }
+        - { name: Sam, color: blue }
+        - { name: Jazz, color: green }
+    - transform item regex_field_filter:
+        name:
+            exclude: [ "J" ]
+    - test asserting list:
+        - { name: Sam }
+
+    # Test inclusion
+    - collect inline list:
+        - { name: Jon , color: green }
+        - { name: Soap , color: green }
+        - { name: Sam, color: r }
+
+    - transform item regex_field_filter:
+        name:
+            include: [ "J" ]
+        color:
+            include: [ "r" ]
+    - test asserting list:
+        - { name: Jon }
+        - { name: Sam }
+

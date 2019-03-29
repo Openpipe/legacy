@@ -1,0 +1,11 @@
+start:
+    - collect inline yaml:
+        Python: 20
+        C++: 15
+        Java: 10
+        Perl: 4
+        Scala: 9
+        Lisp: 11
+
+    - transport matplotlib barchart_top:
+        filename: /tmp/barchar_top.png

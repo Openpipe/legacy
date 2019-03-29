@@ -1,0 +1,17 @@
+start:
+    - collect inline yaml:
+        distance: 12.4567
+    - transform field format:
+        distance: "{:.2f}"
+    - test asserting value:
+        distance: '12.46'
+
+    # Support for assigning a single format to multiple keys:
+    - collect inline yaml:
+        distance: 12.4567
+        size: 12.899
+    - transform field format:
+        distance, size : "{:.2f}"
+    - test asserting value:
+        distance: "12.46"
+        size: "12.90"

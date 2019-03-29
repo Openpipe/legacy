@@ -1,0 +1,4 @@
+start:
+
+    # Empty test for the start control
+    - collect inline text: "Dummy text"

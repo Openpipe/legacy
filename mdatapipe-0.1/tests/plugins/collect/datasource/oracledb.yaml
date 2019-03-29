@@ -1,0 +1,3 @@
+start:
+    - transport console print:
+        "Only works with an Oracle DB"

@@ -1,0 +1,2 @@
+include mdatapipe/version
+recursive-include examples *

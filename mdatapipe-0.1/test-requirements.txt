@@ -1,0 +1,7 @@
+tox
+flake8
+pytest
+pytest-env
+colorama
+termcolor
+pyyaml

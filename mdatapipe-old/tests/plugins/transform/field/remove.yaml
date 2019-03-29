@@ -1,0 +1,7 @@
+start:
+    - collect inline yaml:
+        name: John Parmesano
+        weight: 25
+    - transform field remove: [ name ]
+    - test asserting value:
+        weight: 25

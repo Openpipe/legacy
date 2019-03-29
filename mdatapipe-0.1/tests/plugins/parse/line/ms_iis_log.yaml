@@ -1,0 +1,11 @@
+start:
+    - collect inline text: |
+        #Fields: date time s-ip cs-method cs-uri-stem cs-uri-query s-port cs-username c-ip cs(User-Agent) cs(Referer) sc-status sc-substatus sc-win32-status time-taken
+        2016-09-13 21:45:10 ::1 GET /webapp2 - 80 - ::1 Mozilla/5.0+(Windows+NT+10.0;+Win64;+x64)+AppleWebKit/537.36+(KHTML,+like+Gecko)+Chrome/52.0.2743.116+Safari/537.36 - 500 0 0 5502
+    - parse line ms_iis_log:
+    - test asserting value:
+        timestamp: 2016-09-13 21:45:10
+        cs-method: get
+        cs-uri-stem: /webapp2
+        s-port: "80"
+        c-ip: ::1

@@ -1,0 +1,85 @@
+#
+# ~/TED/daily-packages/2018/ is a mirror from ftp://ted.europa.eu/daily-packages/2018/
+#
+# Schema details are available from:
+#   http://publications.europa.eu/mdr/eprocurement/ted/index.html
+#
+libraries:
+  - https://github.com/mdatapipe-plugins/matplotlib
+
+start:
+    - insert:
+        - ~/TED/daily-packages/2019/01/20190130_2019021.tar.gz
+    - collect from glob: #~/TED/daily-packages/2018/*/*.gz
+    - insert: $_$   # Glob returns a single list, we want to hande each filename individually
+    - print: Processing tar file $_$
+    - collect from tar_file:
+    - print: Processing xml file $name$
+    # Ugly hack to remove <P></P> from htmllified text
+    - insert: $ content.replace(b'</P>', b'\n') $
+    - insert: $ _.replace(b'<P>', b'') $
+    -  parse text xml_sub:
+        TED_EXPORT:
+            CODED_DATA_SECTION:
+                REF_OJS:
+                    DATE_PUB: .
+
+                NOTICE_DATA:
+                    ISO_COUNTRY:
+                        "@VALUE": ISO_COUNTRY
+                    ORIGINAL_CPV: CPV_LIST
+
+                    VALUES:
+                        VALUE: .
+                        VALUE_RANGE: .
+                CODIF_DATA:
+                    DS_DATE_DISPATCH: .
+                    DT_DATE_FOR_SUBMISSION: .
+                    TD_DOCUMENT_TYPE: .
+                    NC_CONTRACT_NATURE: .
+                    PR_PROC: .
+                    MA_MAIN_ACTIVITIES: .
+
+            TRANSLATION_SECTION:
+                ML_TITLES:
+                    ML_TI_DOC: .
+    - update:
+        set:
+            ML_TI_DOC:  $[x for x in ML_TI_DOC if x['@LG']=='EN'][0]$
+    - update:
+        set:
+            COUNTRY:    $ML_TI_DOC['TI_CY']$
+            TOWN:       $ML_TI_DOC['TI_TOWN']$
+            TEXT:       $ML_TI_DOC['TI_TEXT']$
+            TD_DOCUMENT_TYPE:   $TD_DOCUMENT_TYPE['#text']$
+            DOCS:      1   # Inject a dummy count field for stats
+
+    - drop:         ML_TI_DOC   # We no longer need the original field
+
+    # Groyp by country to count number of docs per country
+    - group by:
+        keys: [COUNTRY]
+        stats: [DOCS]
+
+    # Countries with less than 10 documets are set to "OTHER"
+    - update:
+        where: $ DOCS_count < 10 $
+        set:
+            COUNTRY: OTHER
+
+    # Regroup to sum "OTHER" countries
+    - group by:
+        keys: [COUNTRY]
+        stats: [DOCS_count]
+
+    # Sort by DOCS count
+    - sort:
+        key: $DOCS_count_sum$
+        descendent: True
+
+    # We want the sum of counts
+    - create barchart:
+        labels_key: COUNTRY
+        values_key: DOCS_count_sum
+        path: docs/TED/docs_by_country.png
+        ylabel: Tenders Eletronic Daily Documents (Count)

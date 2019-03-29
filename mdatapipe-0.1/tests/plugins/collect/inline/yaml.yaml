@@ -1,0 +1,8 @@
+start:
+    - collect inline yaml:
+        title: Some Title
+        number: 17
+
+    - test asserting value:
+        title: Some Title
+        number: 17

@@ -1,0 +1,5 @@
+start:
+    - collect datasource clock:
+        interval: 5s
+        max_count: 3
+    - transport console print:

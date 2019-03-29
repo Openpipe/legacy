@@ -1,0 +1,18 @@
+- collect datasource file: 
+    path: ~/tmp/academia/PostHistory.xml.gz
+
+- parse line grok:
+    ignore_invalid: True
+    expr:
+        '
+        %{NOTSPACE} %{WORD}="%{NUMBER:Id}" %{WORD}="%{NUMBER:PostHistoryTypeId}"
+        %{WORD}="%{NUMBER:PostId}" %{NOTSPACE} %{WORD}="%{TIMESTAMP_ISO8601:CreationDate}"
+        '
+
+- transport using influxdb:
+    buffer_size: 10000
+    dbname: mydb
+    measurement: academia
+    tag_set: [ PostHistoryTypeId ]
+    field_set: [ Id ]
+    timestamp: CreationDate

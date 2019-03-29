@@ -1,0 +1,4 @@
+start:
+    - collect datasource glob:
+        path: tests/plugins/collect/datasource/glob.*
+    - test asserting value: ['tests/plugins/collect/datasource/glob.yaml']

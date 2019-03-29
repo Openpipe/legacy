@@ -1,0 +1,4 @@
+start:
+  - collect inline text: SampleText
+  - transform item eval_append: .lower()
+  - test asserting value: sampletext

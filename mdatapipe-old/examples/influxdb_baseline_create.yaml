@@ -1,0 +1,23 @@
+## Get data from the previous day
+- collect using influxdb:
+    db_name: mydb
+    query: SELECT * FROM logs WHERE time > now() - 2d and time < now() - 1d
+
+## Append the current time for the date manipulation
+- transform using datetime_append:
+    field_name: now
+    expr: .now()
+
+## Replace the year/month/day of the "time" field with the fields from now
+- transform using datetime_replace:
+    field_name: time
+    replace: [ $now.year$, $now.month$, $now.day$ ]
+
+## Transport into the influxdb
+- transport using influxdb:
+    timestamp: time
+    buffer_size: 2500
+    dbname: mydb
+    measurement: $measurement$_baseline
+    tag_set: [ url, client_ip, http_status_code ]
+    field_set: [ request_time_micros, response_size ]

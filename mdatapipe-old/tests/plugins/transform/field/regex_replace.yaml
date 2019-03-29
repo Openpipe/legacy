@@ -1,0 +1,12 @@
+start:
+    - collect inline yaml:
+        color: Green
+        title: G0d
+    - transform field regex_replace:
+        color:
+            "G.*" : "Blue"
+        title:
+            "G[0-9]" : "God"
+    - test asserting value:
+        color: Blue
+        title: God

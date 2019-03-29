@@ -1,0 +1,13 @@
+start:
+    - collect inline list:
+        - This is a nice text
+        - Does not get included
+        - This one does
+        - This goes to exclusion
+    - transform item regex_filter:
+        include: [ "^[TA].*" ]
+        exclude: [ ".*goes.*" ]
+    - test asserting list:
+        - This is a nice text
+        - This one does
+

@@ -1,0 +1,41 @@
+start:
+    ## Build sample text
+    - collect inline text: |
+        2018-06-05 00:10:07 myserver.localhost 10.16.70.14 80 GET /sapatos/ "" 10.6.16.17 10.6.16.67 - "HTTPClient" someid someid someid someid someid HTTP/1.1 200 641 23748
+        2018-06-05 00:10:07 myserver.newhost 10.16.70.14 80 GET /sapatos/ "" 10.6.16.17 10.6.16.67 - "HTTPClient" someid someid someid someid someid HTTP/1.1 200 641 23748
+
+
+    ## Parse using the csv plugin
+    - parse line csv:
+        delimiter: " "
+        field_list:
+            [ # date and time are merged into 2 values (:2), fields names with a leading ~ are filtered out
+            "timestamp:2", vhost, ~host_ip, ~port, method, url, query, ~client_host, ~client_ip, ~remote_user,
+            ~user_agent, ~someid, ~someid, ~someid, ~someid, ~someid, ~http_version, http_status_code, ~response_size, request_time
+            ]
+
+
+    - transport pipeline send_to:
+        set_url:
+        set_ip:
+
+set_url:
+    - transform field set:
+        key: url
+    - transport pipeline send_to:
+        output:
+
+set_ip:
+    - transform field set:
+        key: ip
+    - transport pipeline send_to:
+        output:
+
+output:
+    - transport console pprint:
+    - transport datastore influxdb:
+        dbname: mydb
+        buffer_size: 1
+        measurement: wtb_$key$
+        tag_set: [ method, http_status_code ]
+        field_set: [ request_time ]

@@ -1,0 +1,3 @@
+start:
+    - transport console print:
+        "Needs an Influxdb instance for testing"

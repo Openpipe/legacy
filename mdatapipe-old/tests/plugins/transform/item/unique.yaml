@@ -1,0 +1,22 @@
+start:
+    - collect inline list:
+        - red
+        - red
+        - blue
+        - green
+        - green
+    # First let's validate that we have the expected output
+    - test asserting list:
+        - red
+        - red
+        - blue
+        - green
+        - green
+
+    - transform item unique:
+
+    # Check if we got only the unique items
+    - test asserting list:
+        - red
+        - blue
+        - green

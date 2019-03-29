@@ -1,0 +1,7 @@
+tox
+flake8
+pytest
+colorama
+termcolor
+redis
+pyyaml

@@ -1,0 +1,99 @@
+:source-highlighter: prettify
+
+= MultiDataPipe
+
+== Introduction
+
+The current diversity of communication and storage data formats is one of the challenges for data integration solutions. There are many tecnhology/format specific integrations tools, but mostly requiring the know-how of a specific programming language/SDK/API.
+
+== Pipelines
+MultiDataPipe provides a solution for easy integration of data from multiple sources, using general purpose transformation plugins that can be chained in order to build data pipelines. A pipeline represents an unidirectional flow of data through a sequence of plugins.
+
+Each plugin instance run on it's own process, data communication between plugins is done throught network sockets. In it's current implementation, all process of a pipeline run in the same system/container. This architecture can be easily extended with the ability to distribute pipelines over systems/containers.
+
+A data pipeline definition is a declarative `YAML` file describing the sequence of steps, and the configuration for each step. A good understanding of the http://yaml.org/[YAML syntax] is recommended. In most cases no programming language know-how is required, the documentation of the plugins and on how they operate with the data should be sufficient.
+
+== Plugins
+MultiDataPipe plugins are developed in Python, they are regular python modules which must implement a `Plugin` class derived from `PipelinePlugin`. Plugin developers don't need to handle the inter-plugin communication. The PipelinePlugin automatically consumes every item that is delivered to it, and invokes the `on_input(self, item)` which performs the data processing logic. Items will be delivered to the next pipeline in the chain, by using the `put()` method. A plugin process will stop after receiving _None_ from it's antecessor, this is performed implicitely by the pipeline manager.
+
+There are two types of plugins: `filters` and `transports`. Filters have full control of the data that flows through them, because they must explicitely `put()` the items that are delivered to the next plugin. Transports can not change nor produce new items, they implicitely deliver the items they consume to the next plugin, before invoking their own item handler method.
+
+Plugins are grouped inside the `mdatapipe/plugins` directory.
+
+Example:
+
+```yaml
+- collect datasource file:    # This maps to mdatapipe/plugins/collect/from/file.py
+    name: /etc/passwd
+```
+
+Transports are grouped inside the  `mdatapipe/plugins/transport/using` .
+
+=== Plugin life-cycle
+
+==== Load
+When a pipeline defintion is parsed, for each item of the top level list, the name of the module is determined by mapping `"word1 word2 word3"` to `mdatapipe/plugins/word1/word2/word3.py`. The module is imported, and a Plugin
+object is create. If an `on_load ()` method is provided it will be executed.
+
+With the following example step, the plugin from  `transport/using/print.py` will be loaded:
+[source, yaml]
+----------------
+- transport console print:
+----------------
+
+
+NOTE: The on_load() method is executed in the context of the datapipe manager, not in the plugin process.
+
+
+==== Start
+After the pipeline is fully parsed and all plugins are loaded, they are started in sequence. If an `on_start()` method is available, it will be invoked. This method can be used to initalize the resources required by the plugin, for example, setting up a database connection/session.
+
+Once a plugin is started it will sleep in a blocking read, waiting for input items. Idle plugins do not use CPU.
+
+In order to "unblock" the first plugin of a pipeline, the pipeline manager will produce a single element with the current time.
+
+
+==== Input Loop
+After the `on_start()` method is called, the plugin enters into an input loop, waiting for data from it's input pipes, the `on_input_item` or `on_input_buffer` handlers are invoked when data is received. This handlers may produce one, none, or multiple items to be consumed by the next plugin.
+
+==== End
+A plugin process ends when it's previvous plugin sends a `None` value, this is implicitely managed by pipeline manager.
+
+The following example is an transport plugin that prints items as they are delivered:
+```python
+from mdatapipe.core.plugin import PipelinePlugin
+
+
+class Plugin(PipelinePlugin):
+
+    def on_input(self, item):
+        print(item)
+```
+
+The following example is an transport plugin that prints items as they are delivered:
+```python
+from mdatapipe.core.plugin import PipelinePlugin
+
+
+class Plugin(PipelinePlugin):
+
+    def on_input(self, item):
+        print(item)
+```
+
+The following example is a filter plugin that produces only the uniques items that it receives:
+
+```python
+from mdatapipe.core.plugin import PipelinePlugin
+
+
+class Plugin(PipelinePlugin):
+
+    def on_start(self):
+        self.unique_list = []
+
+    def on_input(self, item):
+        if item not in self.unique_list:
+            self.unique_list.append(item)
+            self.put(item)
+```

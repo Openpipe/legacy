@@ -1,0 +1,6 @@
+start:
+    - collect datasource clock:
+        interval: 1s
+        max_count: 1
+    - collect inline text: ok
+    - test asserting value: ok

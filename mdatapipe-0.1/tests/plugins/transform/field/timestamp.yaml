@@ -1,0 +1,9 @@
+start:
+    - collect inline yaml:
+        started: "2018-01-12 10:11:45"
+
+    - transform field timestamp:
+        started: "%Y-%m-%d %H:%M:%S"
+
+    - test asserting value:
+        started: 1515751905.0

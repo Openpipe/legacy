@@ -1,0 +1,16 @@
+start:
+    - collect inline text: |
+                # Sample obtained with TZ=UTC LC_TIME=C LANG=C sar -pA 1 1
+                Linux 3.10.0-862.3.2.el7.x86_64 (localhost.my.com)  07/21/18        _x86_64_        (4 CPU)
+
+                19:05:49        CPU      %usr     %nice      %sys   %iowait    %steal      %irq     %soft    %guest    %gnice     %idle
+                19:05:50        all      7,32      0,00      2,53      0,00      0,00      0,00      0,25      0,00      0,00     89,90
+                19:05:50          0      9,09      0,00      3,03      0,00      0,00      0,00      0,00      0,00      0,00     87,88
+                19:05:50          1     11,22      0,00      2,04      0,00      0,00      0,00      0,00      0,00      0,00     86,73
+                19:05:50          2      5,05      0,00      3,03      0,00      0,00      0,00      0,00      0,00      0,00     91,92
+                19:05:50          3      3,00      0,00      3,00      0,00      0,00      0,00      0,00      0,00      0,00     94,00
+
+                # We need a trailing line to close the SAR section
+    - parse line sar:
+    - test asserting value:
+        hostname: localhost.my.com

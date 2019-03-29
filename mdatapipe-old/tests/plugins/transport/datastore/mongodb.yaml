@@ -1,0 +1,3 @@
+start:
+    - transport console print:
+        "Needs an MongoDB instance for testing"

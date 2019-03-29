@@ -1,0 +1,62 @@
+= MDataPipe Plugin
+João Pinto <lamego.pinto@gmail.com>
+v0.1, 2018-09-05
+
+This document describes the lifecycle and interfaces of a mdatapipe plugin.
+
+
+== Base Plugin Class
+
+A MultiDataPipe plugin is a python module which must provide a _Plugin_ class, that class must implement the methods described on this section.
+
+=== Methods
+
+==== load(instance_id)
+The load method is run in the context of the plugin manager process, it can be used to setup resources that are required to load a plugin. The _instance_id_ is a string that can be used to uniquely identify an instance of a plugin.
+
+NOTE: Resources that are required only during the plugin runtime, should be setup in the context of the plugin process, at the _start()_ method, not here.
+
+==== add_input_connection(conn, label)
+Add the _conn_ https://docs.python.org/3/library/multiprocessing.html#multiprocessing.connection.Connection[Connection] object as an input connection. The _label_ is an optional string that can be used to identify the connection.
+
+==== add_output_connection(conn, label)
+Add the _conn_ https://docs.python.org/3/library/multiprocessing.html#multiprocessing.connection.Connection[Connection] object as an output connection. The _label_ is an optional string that can be used to identify the connection.
+
+==== add_control_connection(conn, label)
+Add the _conn_ https://docs.python.org/3/library/multiprocessing.html#multiprocessing.connection.Connection[Connection] object as a status connection. The _label_ is an optional string that can be used to identify the connection.
+
+==== add_events_connection(conn, label)
+Add the _conn_ https://docs.python.org/3/library/multiprocessing.html#multiprocessing.connection.Connection[Connection] object as an events connection. The _label_ is an optional string that can be used to identify the connection.
+
+==== start()
+The start method is invoked after the plugin process is started, it must setup any required resources required by the plugin.
+
+==== get_id()
+This method is only valid after calling _start()_, it returns a system unique id for the process. In a single system this will be the OS Process ID for the plugin python's process.
+
+=== CEIO Protocol
+A plugin MUST receive control request strings «from "control" connections» and reply to such requests «through the same connection» as soon as possible. A plugin may send event strings «to "events" connections», may receive objects from "input" connections», and may send  objetcs «to "output" connections». Asynchronous control handlers MUST send events to report the completion status.
+
+==== Control
+A plugin MUST read control strings from control connections, it must reply back with an acception/rejection message. The following 3 control requests types are mandatory:
+
+"start" |
+"status"
+"stop"
+
+==== Events
+A plugin may deliver events to "event" connections, because control requests cab be asynchronous, control completation should be provided/checked via the event connection.
+
+==== Input
+Plugins will receive objects from input connections using https://docs.python.org/3/library/multiprocessing.html#multiprocessing.connection.Connection.recv[recv()]. When a _None_ is received, the input connection where it was received should be closed. If the number of input connections becomes 0, the plugin should terminate after flushing/processing any pending data it may be handling.
+
+==== Output
+Plugins will send objects to output connecestions using https://docs.python.org/3/library/multiprocessing.html#multiprocessing.connection.Connection.send[send()]. When a plugin has no more data to send, it must send _None_ to the connection, before closing it/terminating.
+
+==== Status
+Plugins will read string objects from the status connection using _recv()_, they must reply back, in the same connection, sending a string, send with _send()_.
+
+==== Events
+
+Plugins will read string objects from the status connection using _recv()_, they must reply back, in the same connection, sending a string, send with _send()_.
+

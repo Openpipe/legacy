@@ -1,0 +1,10 @@
+start:
+    - collect inline list:
+        - item 1
+        - item 2
+        - item 3
+        - item 4
+    - transform item max_count: 2
+    - test asserting list:
+        - item 1
+        - item 2

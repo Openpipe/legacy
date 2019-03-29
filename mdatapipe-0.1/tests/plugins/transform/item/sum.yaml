@@ -1,0 +1,12 @@
+start:
+    - collect inline list:
+        - { COUNT FEMALE: 9, COUNT MALE: 10 }
+        - { COUNT FEMALE: 2, COUNT MALE: 5 }
+
+    - transform item sum:   # Calculate the sum for each of the fields
+        COUNT FEMALE: total_female
+        COUNT MALE: total_male
+
+    - test asserting value:
+        total_female: 11
+        total_male: 15

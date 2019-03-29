@@ -1,0 +1,3 @@
+start:
+    - transport console print:
+        "nothing to test at the moment"

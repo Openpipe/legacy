@@ -1,0 +1,22 @@
+# A data pipeline is composed by one or more segments
+# A segment is composed by a sequence of steps
+
+segments:
+
+  start:
+    - collect from file:
+        path: /etc/passwd
+        on-success: file_was_completed
+        on-failure: error_processing_file
+       
+    - parse csv: 
+        include_header: True
+
+  file_was_completed:
+          - print: "File processing was completed, $line_count$ line(s) were processed."
+
+  error_or_file:
+          - print: " 
+              There was an error processing the file:
+              $error_message$"
+

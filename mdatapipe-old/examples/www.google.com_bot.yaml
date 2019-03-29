@@ -1,0 +1,61 @@
+## Create watch_list table
+- transform using mariadb:
+    sql: CREATE TABLE IF NOT EXISTS watch_list (
+            url VARCHAR(512) NOT NULL UNIQUE,
+            last_scan TIMESTAMP NULL DEFAULT NULL
+            );
+
+## Create links table
+- transform using mariadb:
+    sql: CREATE TABLE IF NOT EXISTS links (
+            source VARCHAR(512),
+            target VARCHAR(512)
+            );
+
+## Insert start point URL
+- transform using mariadb:
+    sql: INSERT INTO watch_list (url)
+        VALUES (%s)
+    values: https://www.google.com/
+    ignore_integrity_errors: True
+
+## Invocation timer loop
+- collect using lock: { interval: 1m, max_count: 5 }
+
+## Collect URLs from the watch_list
+- transform using mariadb:
+    sql: SELECT url FROM watch_list WHERE last_scan IS NULL
+
+## Update last_scan for URL beeing scanned
+- transform using mariadb:
+    sql: UPDATE watch_list SET last_scan=CURRENT_TIMESTAMP()
+        WHERE url = %s and last_scan IS NULL
+    values: $url$
+
+## Get URL content
+- collect using url: { path: $url$ , ignore_errors: True, timeout: 1 }
+
+## Parse content for links
+- parse line html_xpath: { input: $content$, target: content, xpath: "//a/@href" }
+
+## Select only http/https links
+- transform using regex_filter: { value: $content$, pattern: "^https?://" }
+
+## Insert collected links
+- transform using mariadb:
+    sql: INSERT INTO links (source, target) VALUES (%s, %s)
+    values: [ $url$, $content$ ]
+
+## Filter out duplicate entries
+- filter using unique:
+    input: $$
+    max_items: 10000
+
+## Add collected links to watch list
+- transform using mariadb:
+    sql: INSERT INTO watch_list (url) VALUES (%s)
+    values: [ $content$ ]
+    ignore_integrity_errors: True
+
+## /dev/null
+- transport using zero:

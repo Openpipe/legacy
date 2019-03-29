@@ -1,0 +1,6 @@
+- collect using http_server:
+    host: localhost
+    port: 8080
+
+- transport using http_file:
+    root_dir: public_html

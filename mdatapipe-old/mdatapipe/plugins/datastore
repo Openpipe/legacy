@@ -1,0 +1,27 @@
+#!/usr/bin/python
+"""
+
+- transport using redis:
+    buffer_size: 100
+    url: redis://[:password@]host[:port][/db-number][?option=value]
+
+Requires: redis
+
+"""
+from redis import Redis
+from mdatapipe.core.plugin import PipelinePlugin
+
+
+class Plugin(PipelinePlugin):
+
+    def on_start(self):
+        self.config['buffer_size'] = self.config.get('buffer_size', 100)
+        self.config['url'] = self.config.get('url', 'localhost:27017')
+        self._redis = Redis.from_url(self.config['url'])
+
+    def on_input_buffer(self, buffer):
+        pipeline = self._redis.pipeline()
+        for item in buffer:
+            key = self.config['key']
+            pipeline.set(key, item)
+        pipeline.execute()

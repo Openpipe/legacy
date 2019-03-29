@@ -1,0 +1,13 @@
+start:
+
+    - collect inline text:
+        This is a sample text
+
+    - transport datastore file:
+        path: tests/tmp/out.txt
+        auto_close: True
+
+    - collect datasource file:
+        path: tests/tmp/out.txt
+
+    - test asserting value: This is a sample text

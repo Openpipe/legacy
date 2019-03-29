@@ -1,0 +1,19 @@
+start:
+    - collect inline text: simple_text
+
+    - transport pipeline send_to:
+        agreg_1:
+        agreg_2:
+
+agreg_1:
+
+    - transport pipeline send_to:
+        output:
+
+agreg_2:
+
+    - transport pipeline send_to:
+        output:
+
+output:
+    - transport console pprint:

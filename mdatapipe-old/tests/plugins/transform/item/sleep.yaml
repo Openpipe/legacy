@@ -1,0 +1,6 @@
+start:
+    - collect inline text:
+        Just a test line
+    - transform item sleep: 1
+    - test asserting value:
+        Just a test line

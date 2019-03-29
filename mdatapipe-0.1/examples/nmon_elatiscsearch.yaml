@@ -1,0 +1,12 @@
+start:
+    - collect datasource file:
+        path: examples/samples/SOMEHOST_20150909_040202.nmon.gz
+
+    - parse line nmon:
+
+    - transport datastore elasticsearch:
+        url: http://localhost:9200/
+        index: mdatapipe
+        buffer_size: 1000
+
+

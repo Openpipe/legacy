@@ -1,0 +1,9 @@
+start:
+    - collect inline yaml:
+        apples: "12"
+
+    - transform field to_int:
+        { "apples": }
+
+    - test asserting value:
+        apples: 12

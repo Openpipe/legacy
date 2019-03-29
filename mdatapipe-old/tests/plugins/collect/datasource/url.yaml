@@ -1,0 +1,3 @@
+start:
+    - transport console print:
+        Don't do nothing because we don't want to depend on internet conectivity

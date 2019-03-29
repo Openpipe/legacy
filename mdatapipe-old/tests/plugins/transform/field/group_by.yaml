@@ -1,0 +1,71 @@
+start:
+    ## Build sample text
+    - collect inline text: |
+        2018-06-05 00:10:07 myserver.localhost 10.16.70.14 80 GET /sapatos/ "" 10.6.16.17 10.6.16.67 - "HTTPClient" someid someid someid someid someid HTTP/1.1 200 641 23748
+        2018-06-05 00:10:07 myserver.localhost 10.16.70.14 80 GET /sapatos/ "" 10.6.16.17 10.6.16.67 - "HTTPClient" someid someid someid someid someid HTTP/1.1 200 641 23748
+        2018-06-05 00:10:07 myserver.localhost 10.16.70.14 80 GET /sapatos/ "" 10.6.16.17 10.6.16.67 - "HTTPClient" someid someid someid someid someid HTTP/1.1 200 641 23748
+        2018-06-05 00:10:07 myserver.localhost 10.16.70.14 80 GET /sapatos/ "" 10.6.16.17 10.6.16.67 - "HTTPClient" someid someid someid someid someid HTTP/1.1 200 641 23749
+
+    ## Parse using the csv plugin
+    - parse line csv:
+        delimiter: " "
+        field_list:
+            [ # date and time are merged into 2 values (:2), fields names with a leading ~ are filtered out
+            "timestamp:2", vhost, ~host_ip, ~port, method, url, query, ~client_host, ~client_ip, ~remote_user,
+            ~user_agent, ~someid, ~someid, ~someid, ~someid, ~someid, ~http_version, http_status_code, ~response_size, request_time
+            ]
+
+    - transform field group_by:
+        fields: [ timestamp, vhost ]
+        stats: [ request_time ]
+
+    - test asserting value:
+        request_time_avg: 23748.25
+        request_time_count: 4
+        request_time_max: 23749
+        request_time_sum: 94993
+        timestamp: '2018-06-05 00:10:07'
+        vhost: 'myserver.localhost'
+
+    ## Build sample text
+    - collect inline text: |
+        2018-06-05 00:10:07 myserver.localhost 10.16.70.14 80 GET /sapatos/ "" 10.6.16.17 10.6.16.67 - "HTTPClient" someid someid someid someid someid HTTP/1.1 200 641 1001
+        2018-06-05 00:10:07 myserver.localhost 10.16.70.12 80 GET /sapatos/ "" 10.6.16.17 10.6.16.67 - "HTTPClient" someid someid someid someid someid HTTP/1.1 200 641 1000
+        2018-06-05 00:10:07 myserver.localhost 10.16.70.12 80 GET /sapatos/ "" 10.6.16.17 10.6.16.67 - "HTTPClient" someid someid someid someid someid HTTP/1.1 200 641 2000
+        2018-06-05 00:10:07 myserver.newhost 10.16.70.14 80 GET /sapatos/ "" 10.6.16.17 10.6.16.67 - "HTTPClient" someid someid someid someid someid HTTP/1.1 200 641 23749
+
+    ## Parse using the csv plugin
+    - parse line csv:
+        delimiter: " "
+        field_list:
+            [ # date and time are merged into 2 values (:2), fields names with a leading ~ are filtered out
+            "timestamp:2", vhost, host_ip, ~port, method, url, query, ~client_host, ~client_ip, ~remote_user,
+            ~user_agent, ~someid, ~someid, ~someid, ~someid, ~someid, ~http_version, http_status_code, ~response_size, request_time
+            ]
+
+    - transform field group_by:
+        sorted_fields: [ vhost, host_ip ]
+        fields: [ timestamp, vhost ]
+        stats: [ request_time ]
+
+    - test asserting list:
+        -   request_time_avg: 1001
+            request_time_count: 1
+            request_time_max: 1001
+            request_time_sum: 1001
+            timestamp: '2018-06-05 00:10:07'
+            vhost: 'myserver.localhost'
+        -   request_time_avg: 1500.0
+            request_time_count: 2
+            request_time_max: 2000
+            request_time_min: 1000
+            request_time_sum: 3000
+            timestamp: '2018-06-05 00:10:07'
+            vhost: 'myserver.localhost'
+        -   request_time_avg: 23749.0
+            request_time_count: 1
+            request_time_max: 23749
+            request_time_min: 23749
+            request_time_sum: 23749
+            timestamp: '2018-06-05 00:10:07'
+            vhost: 'myserver.newhost'

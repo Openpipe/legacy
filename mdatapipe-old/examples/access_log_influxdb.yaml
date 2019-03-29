@@ -1,0 +1,16 @@
+- collect datasource file:
+    path: tests/samples/NASA_access_log_Aug95
+
+- parse line grok:
+            expr: '
+            %{IPORHOST:client_host} %{NOTSPACE} %{NOTSPACE}
+            \[%{HTTPDATE:timestamp}\] %{QUOTEDSTRING:request}
+            %{NUMBER:http_status_code} (%{NUMBER:bytes_sent}|-)
+            '
+
+- transport using influxdb:
+    dbname: mydb
+    buffer_size: 1000
+    measurement: access_log
+    tag_set: [ client_host, http_status_code ]
+    field_set: [ bytes_sent ]

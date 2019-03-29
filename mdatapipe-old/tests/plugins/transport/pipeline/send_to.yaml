@@ -1,0 +1,21 @@
+start:
+    - collect inline text:
+        This is a text
+
+    - transport pipeline send_to:
+        test_pipeline_1:
+        test_pipeline_2:
+
+    - collect inline text:
+        Test the main pipeline
+
+    - test asserting value:
+        Test the main pipeline
+
+test_pipeline_1:
+    - test asserting value:
+        This is a text
+
+test_pipeline_2:
+    - test asserting value:
+        This is a text

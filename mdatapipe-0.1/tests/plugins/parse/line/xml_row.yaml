@@ -1,0 +1,24 @@
+start:
+    ## Build sample text
+    - collect inline text: ' <row Id="1" PostHistoryTypeId="2" />  '
+
+    ## Parse using the csv plugin
+    - parse line xml_row:
+
+    ## Verify the output
+    - test asserting value:
+        Id: "1"
+        PostHistoryTypeId: "2"
+
+
+    ## Build sample text with int field
+    - collect inline text: ' <row Id="1" PostHistoryTypeId="2" />  '
+
+    ## Parse using the csv plugin
+    - parse line xml_row:
+        int_fields: [ Id ]
+
+    ## Verify the output
+    - test asserting value:
+        Id: 1
+        PostHistoryTypeId: "2"

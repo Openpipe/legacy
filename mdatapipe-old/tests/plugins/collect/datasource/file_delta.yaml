@@ -1,0 +1,43 @@
+
+#
+# Create a file with a single line, then run two parallell blocks
+#   - write_line: write a new line after a 1s delay
+#   - check_delta,: to collect only new lines from the file
+
+start:
+
+    # Write "Line 1" to simulate an existing file
+    - transform item unlink:
+        ignore_errors: True
+        path: tmp.txt
+    - transport console print: Create file with "Line 1"
+    - collect inline text: Line 1
+    - transport datastore file: { path: tmp.txt }
+
+    - transport pipeline send_to:
+        check_delta:
+        write_line:
+
+write_line:
+    # Wait for 1s before writing the second line
+    - transform item sleep: 1
+    - transport console print: "Writing line 2"
+    - collect inline text: "*** LINE 2 ***"
+    - transport datastore file:
+        path: tmp.txt
+        mode: "a"
+
+check_delta:
+    # Check file for new lines every 3s
+    - collect datasource clock:
+        interval: 3s
+        max_count: 2
+
+    - transport console print: Checking file for changes
+    - collect datasource file_delta:
+        path: tmp.txt
+
+    - test asserting value: "*** LINE 2 ***"
+
+    - transform item unlink:
+        path: tmp.txt

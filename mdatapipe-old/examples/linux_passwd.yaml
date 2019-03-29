@@ -1,0 +1,7 @@
+- collect datasource file:
+    path: /etc/passwd
+
+- transform using split:
+        - split:
+            sep: ":"
+            map_list: [username, password, uid, gid, gecos, home, shell]

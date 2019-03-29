@@ -1,0 +1,8 @@
+- collect:
+    - from:
+        - file:
+            path: /var/log/sa/sar*
+
+- parse:
+    - using:
+        - splitlines

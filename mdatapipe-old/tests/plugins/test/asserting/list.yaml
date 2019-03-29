@@ -1,0 +1,7 @@
+start:
+
+    # Config based input
+    - collect inline list:
+        - item 1
+        - item 2
+    - test asserting list:

@@ -1,0 +1,9 @@
+start:
+    - collect inline yaml:
+        status: "Component:threadpool,State:HEALTH_WARN,MBean:ThreadPoolRuntime,ReasonCode:[ThreadPool has stuck threads]"
+
+    - transform field regex_group_replace:
+        status: '\[(.*)\]'
+
+    - test asserting value:
+        status: ThreadPool has stuck threads

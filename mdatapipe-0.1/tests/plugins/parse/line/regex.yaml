@@ -1,0 +1,25 @@
+start:
+    # Collect a single field
+    - collect inline text:
+        "CODE: 21C"
+
+    - parse line regex:
+        expr: "CODE: (\\w*)"
+        fields: [ code ]
+
+    - test asserting value:
+        code: 21C
+
+    # Collect more than one field, do int, and float conversions
+    - collect inline text:
+        "Number: 145 CODE: 12A FL: 14.62"
+
+    - parse line regex:
+        expr: "Number: (\\d*) CODE: (\\w*) FL: (\\S*)"
+        fields: [ "number:int", code, "level:float" ]
+
+    - test asserting value:
+        number: 145
+        code: 12A
+        level: 14.62
+

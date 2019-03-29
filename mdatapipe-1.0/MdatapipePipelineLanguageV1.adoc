@@ -1,0 +1,198 @@
+= Mdatapipe Pipeline Language v1
+João Pinto, Draft, lamego.pinto@gmail.com
+:toc: left
+:nofooter:
+:source-highlighter: prettify
+
+== Introduction
+This document aims to define a general purpose data processing description language, suitable for handling both structured an unstructured data. The Mdatapipe Pipeline Language does not intend to be a replacement for tecnhology specific standards (e.g SQL on relational BDs), but instead to be an higher level «computable» description for data transformation and integration processes.
+
+== Prerequisites
+Mdatapipe Pipeline language is a declarative meta-language fully based on the http://yaml.org/spec/1.1/[YAML 1.1] format, knowledge of YAML is a plus for better understanding of the material in this specification.
+
+== Data Types
+When processing diverse data, the initial challenge is to define the data types for both inputs and output values. In order to keep an high level of abstraction, this specification will generally refer to `item` as single unit that is consumed and/or produce by a data processing component. Due to the wide range of capabilities and capacities for data types across different programming languages, platforms and data backends, this spefication does not enforce restrict `item` data types. Instead it provides a loosely coupled definition for data types, based on their access pattern. An `item` can be a scalar, sequence or mapping.
+
+=== Scalar
+The content of a scalar value is an opaque datum that can be presented as a series of zero or more Unicode characters. The contextual access to an scalar, is expressed as `item`.
+
+[source,yaml]
+----
+# YAML representation examples
+        something here
+        12.0
+        16
+        True
+----
+
+=== Sequence
+A sequence is an ordered series of zero or more items. The contextual access to a sequence element is expressed as `item[n]`, where n ranges from 0 to the length of the sequence minus 1.
+
+[source,yaml]
+----
+# YAML representation examples
+    # Sequence of numbers
+    [ 5, -1 ]
+    # Sequence of sequences
+    [ ["a", "b"], ["c", "d"]
+----
+
+=== Mapping
+A mapping is an unordered collection of `key: value` pairs. Keys must be scalars, values can by items of any type. The contextual access to a mapping element is express as `item.key`.
+
+[source,yaml]
+----
+# YAML representation examples
+    name: John
+    size: XL
+    score: [10, 20, 1]
+
+    student:
+        name: Snow
+        rating: A+
+----
+
+
+== Pipeline
+A pipeline is a declarative description of a data transformation process. It can be used to describe both real-time and batch processes using a common set of logical components.  A pipeline is composed by one or more `segments`, a segment is composed by a sequence of zero or more components.
+
+The YAML representation of a pipeline must respect the following rules:
+
+    1. The YAML top level node «"the pipeline"» must be a `block mapping` containing the _"segments"_ key
+
+    2. The _segments_ value is represented by a `block mapping` node containing one or more `key: value` pairs which represent a _segment_ where:
+    a. The `key` is an user defined string that represents the segment name
+    b. The `value` must be a _sequence_ of _components_ .
+
+    3. Each _segment_ item element represents a _Component_ must be a `mapping` node with a single `key: value` pair where:
+    a. The `mapping key` must be a string that represents a component name, available from the components library
+    b. The `value` must be the component's configuration, the type for the configuration is set by the component definition, different instances of a component may support different configuration formats.
+    c. The configuration can be empty, when a component has no configuration, or when it as a default configuration
+
+
+
+.Example pipeline.yaml
+[source,yaml]
+----
+segments:                           # segments collection (1)
+    main:                           # segment name (2)
+        - collect data from file:   # segment item (3, 3a)
+            path: data.txt          # config (3b)
+        - print:                    # segment item with empty config
+----
+
+== Segments
+A pipeline segment represents a sequencial flow of data between components, each component instance creates one or more output streams, output streams are linked to corresponding input streams of the next component.
+
+A component in a segment may reference any other segment, in such case the component will be able to deliver items to the first component of the referenced segments.
+
+NOTE: Component instances may not deliver items to other random components instances in a datapipe.
+
+=== Loading
+When a pipeline is loaded, only the _main_ segment is loaded, other segments are only loaded if/when they are refered by a loading segment.
+
+.Example pipeline.yaml
+[source,yaml]
+----
+segments:
+    my_print1:
+        - print: "This segment will not be loaded"
+    my_print2:
+        - print: "Segment my_print2 was loaded"
+    main:
+        - print: "ok"
+        - send_to: "my_print2"
+        - print: "This will also be printed"
+----
+
+The load process maybe asynchronous, with multiple segments/components beeing loaded in paralell. A pipeline is fully loaded only after all the components of all referenced segments are loaded and all input/output links between component instances are established. A pipeline may be started only after being fully loaded.
+
+== Components
+Component is the fundamental computing unit of a pipeline, it must provide a concrete an well documented logic. It's implementation is abstract, and may change between differente execution engines.
+
+YAML Example:
+
+.Example pipeline.yaml
+[source,yaml]
+----
+segments:
+    main:
+        - wait: 1s              # Name of the component, with the scalar config of "1s"
+        - print: "1s later"
+        - collect from item:    # "collect from item" component, with a mapping config
+            name: Snoe
+        - print:                # With an empty config, prints the received item
+----
+
+
+==== Control
+Components do not have access to the pipeline defintion, a pipeline manager will be responsible to interact with component instances in order to setup the transport channels to other components.
+
+==== Dynamic Configuration
+Component configuration can include variables that reference a part of the input item. The following formats are supported:
+
+[width="80%",cols="^3,10",options="header"]
+|==========================
+| Format        | Description
+| $.$           | Full item content
+| $_key_name_$    | Item.key_name
+| $_number_$           | Item[n], where _num_ is an integer number
+| $#$           | Length of item
+|==========================
+
+.Example pipeline.yaml
+[source,yaml]
+----
+segments:
+    main:
+        - collect from item:
+            name: Snoe
+            age: 88
+        - print:
+            "$name$ is $age$ years old"
+----
+
+NOTE: When you need to include a literal '$' sign on your values, you must escape it: \$
+
+WARNING: Dynamic configuration values need to be resolved for each item that is received, on very large datasets it may result in a significant CPU consuption overhead.
+
+
+==== Event Handlers
+Components may implement event handlers that can be listed to
+ configuration. Event handlers are segments that receive event specific items.
+
+.Example handlers.yaml
+[source,yaml]
+----
+segments:
+    main:
+        - collect from file:
+            path: "something.tmp"
+            on_error:
+                print_error:
+            on_success:
+                print_info:
+                remove_file:
+    print_error:
+        print:
+            "Failed to open file $path$"
+            "$error_msg$"
+    print_info:
+        print: "Completed $path$ reading, $lines_count$ line(s) were processed"
+    remove_file:
+        unlink: # Will use $path$ by default
+----
+
+==== Item Polimorphism
+The same component may handle items of diffreent types. Due to performance reasons, the type inference is performed only on the first consumed element, all items delivered to a component instance MUST be of the same type.
+
+== Execution and Transport
+This language does not impose a specific execution context or transport mean. Follows a list of potential implementations of pipeline execution engines:
+
+- Single-threaded: execution via function calls, items passed as memory references
+- Multi-threaded: execution via threads pools, items passed through queues
+- Multi-process: execution via process pools, items passed «using serialization» over sockets
+- Multi-process-distributed: execution via distributed process pools, items passed «using serialization» over sockets
+
+== Concurrency, Paralelism and Partitioning
+This language does not provide explicit facilities for concurrent, parallel or partitioned execution. Execution engines, may provide such facilities, which should be runtime configurable parameters. Pipelines and/or components configuration may include metadata to be used as hints for execution engines.

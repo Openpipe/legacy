@@ -1,0 +1,7 @@
+pip
+pytz
+pyyaml
+click
+requests
+termcolor
+colorama

@@ -1,0 +1,5 @@
+start:
+    - collect inline yaml:
+        color: red
+        size: 18
+    - transform item csv:

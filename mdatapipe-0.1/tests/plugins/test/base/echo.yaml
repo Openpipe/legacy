@@ -1,0 +1,4 @@
+start:
+    - collect inline text: xpto
+    - test base echo:
+    - test asserting value: xpto

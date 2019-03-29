@@ -1,0 +1,6 @@
+start:
+
+    # Write "Line 1" to simulate an existing file
+    - transform item unlink:
+        ignore_errors: True
+        path: tmp.txt

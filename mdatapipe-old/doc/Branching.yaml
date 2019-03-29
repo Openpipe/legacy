@@ -1,0 +1,31 @@
+#
+# This is a prototype for pipeline branching
+#
+
+main:
+  - collect from database:
+      name: customers
+      fields: name, age, gender, money, sales, email
+
+  - transport using selection:
+
+    - deliver_to: young_people # Lists are treated as "AND"
+      where:
+        - age: "<18"
+        - age: ">8"
+
+  - deliver_to: premium  # Records are treted as "OR"
+      where:
+        money: ">5000"
+        sales: ">1000"
+
+premium:
+  - insert into excel_file:
+    name: smart_people
+  - transport using email:
+      Subject: You are smart !
+
+young_people:
+  - insert into excel_file:
+      name: young_people.xls
+

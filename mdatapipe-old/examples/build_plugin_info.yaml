@@ -1,0 +1,7 @@
+start:
+    - collect datasource command:
+        cmd: "scripts/show_descriptions.sh"
+    - transform item eval_append: .splitlines()
+    - collect inline list:
+    - transport console print:
+        Line: $$

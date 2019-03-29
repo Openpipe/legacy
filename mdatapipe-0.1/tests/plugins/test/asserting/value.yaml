@@ -1,0 +1,3 @@
+# Check for empty assertions
+start:
+    - test asserting value:

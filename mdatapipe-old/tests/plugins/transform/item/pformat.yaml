@@ -1,0 +1,10 @@
+start:
+    -  collect inline yaml:
+        name: Red Bear
+        size: M
+        price: 300
+
+    - transform item pformat:
+
+    - test asserting value:
+        "{'name': 'Red Bear', 'price': 300, 'size': 'M'}"

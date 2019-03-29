@@ -1,0 +1,15 @@
+
+- collect using lock:
+    interval: 1m
+
+- collect using winperf:
+    computer: computername
+
+- transport using influxdb:
+    - influxdb:
+        url: http://influxdb:8086/
+        buffer_size: 1
+        dbname: db_grafana02
+        measurement: npb_com_calltime
+        tag_set: [computer]
+        field_set: [perf-counter]

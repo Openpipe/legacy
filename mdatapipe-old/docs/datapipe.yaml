@@ -1,0 +1,11 @@
+- collect datasource file:
+    path: ~/IIS_Log
+
+- parse line ms_iis_log:
+
+- transport using influxdb:
+            buffer_size: 1000
+            dbname: mydb
+            measurement: iis_log_time
+            tag_set: [s-sitename, s-computername,cs-uri-stem]
+            field_set: [time-taken]

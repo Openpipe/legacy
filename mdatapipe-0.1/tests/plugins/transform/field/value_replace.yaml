@@ -1,0 +1,26 @@
+start:
+    - collect inline yaml:
+        name: Big John Brown
+        nickname: Big Dad
+        shoes: big size
+        address: Stree Malta
+        id: 23X45L
+        ip: "10.10.10.12"
+
+    - transform field value_replace:
+        name startswith:
+            "Big" : "BIG"
+            "mal" : "Goood"
+        shoes contains:
+            "big" : "L"
+        address endswith:
+            "Malta": "Multa"
+        id: # exact match
+            23X45L: 89AAL1
+
+    - test asserting value:
+        'address': 'Multa'
+        'id': '89AAL1'
+        'name': 'BIG'
+        'nickname': 'Big Dad'
+        'shoes': 'L'

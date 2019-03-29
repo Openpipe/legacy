@@ -1,0 +1,40 @@
+:source-highlighter: prettify
+
+= Binary archive build for linux
+
+This document describes the process that was used to create the Linux binary archive.
+
+== Introduction
+
+The build procedures uses docker to setup a centos7 image to compile python and install the mdatapipe module.
+
+== Requirements
+
+Linux 64 bits system with Docker
+
+
+```sh
+docker run -it centos:7 bash
+MDATAPIPE_VERSION=0.0.2
+yum install -y unzip gcc zlib-devel python-setuptools readline-devel make bzip2-devel  sqlite-devel openssl-devel libffi-dev
+curl https://www.python.org/ftp/python/3.7.0/Python-3.7.0.tgz -o Python.tgz
+tar xzvf Python.tgz
+cd Python*
+./configure --prefix=/opt/mdatapipe-$MDATAPIPE_VERSION
+make -j4
+make install
+/opt/mdatapipe-$MDATAPIPE_VERSION/bin/python -m ensurepip
+cd ..
+curl https://codeload.github.com/mdatapipe/mdatapipe/zip/master -o master.zip
+unzip -o master.zip
+/opt/mdatapipe-$MDATAPIPE_VERSION/bin/pip3 install --upgrade mdatapipe-master/
+cp -vpn mdatapipe-master/scripts/mdatapipe_cli.sh /opt/mdatapipe-0.0.2/bin/mdatapipe
+find /opt/mdatapipe-$MDATAPIPE_VERSION -name "*.pyc" -delete
+find /opt/mdatapipe-$MDATAPIPE_VERSION -name "*.pyo" -delete
+tar czvf /tmp/mdatapipe-$MDATAPIPE_VERSION-linux-64.tar.gz -C /opt/ mdatapipe-$MDATAPIPE_VERSION
+# From the docker host
+# docker cp  $CONTAINER_ID:/tmp/mdatapipe-$MDATAPIPE_VERSION-linux-64.tar.gz /tmp
+exit
+
+
+```

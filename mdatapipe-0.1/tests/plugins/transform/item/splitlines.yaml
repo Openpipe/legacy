@@ -1,0 +1,8 @@
+start:
+    - collect inline text: |
+        Line 1
+        Line 2
+    - transform item splitlines:
+    - test asserting list:
+        - Line 1
+        - Line 2

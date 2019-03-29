@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+ENGINE_LIST="multiprocessing singlethread"
+
+scripts/check_test_availability.sh
+for ENGINE in $ENGINE_LIST
+do
+	echo Running tox validation for engine $ENGINE
+	MDP_ENGINE=$ENGINE tox
+done
+

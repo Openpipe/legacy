@@ -1,0 +1,11 @@
+start:
+    - collect inline text:
+        "Number: 145 CODE: 12A"
+
+    - parse line regex:
+        expr: "Number: (\\d*) CODE: (\\w*)"
+        fields: [ "number:int", code ]
+
+    - test asserting value:
+        number: 145
+        code: 12A
